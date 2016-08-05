@@ -3,6 +3,7 @@
 import requests
 import time,datetime,threading,httplib
 import re
+from multiprocessing.dummy import Pool as ThreadPool
 
 def get_userdata(file_url):
     data=[]
@@ -48,15 +49,16 @@ def get_page(cookie):
     'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     }
     url=urls[x-1]
-    r=s.get(url,headers=headers)
-#    print(r.text)
-    cer=re.compile('<h1 class="ctxt02"><s class="icon-redbag"></s>(.*)</h1>',flags=0)
-    strlist=cer.findall(r.text)
-    if not strlist:
-        print('未知错误')
-    else:
-        print(strlist[0])
-
+    for i in range(0,3,1):
+        r=s.get(url,headers=headers)
+    #    print(r.text)
+        cer=re.compile('<h1 class="ctxt02"><s class="icon-redbag"></s>(.*)</h1>',flags=0)
+        strlist=cer.findall(r.text)
+        if not strlist:
+            print('未知错误')
+        else:
+            print(strlist[0])
+        time.sleep(3)
 
 #模式1：对单个用户进行get操作
 def one_get():
@@ -68,10 +70,14 @@ def one_get():
 
 #模式2：对所有用户进行get操作
 def all_get():
-    for cookie in cookies:
-        print('')
-        t=threading.Thread(target=get_page(cookie))
-        t.start()
+    pool = ThreadPool(len(cookies))
+    results = pool.map(get_page, cookies)
+    pool.close()
+    pool.join()
+    #for cookie in cookies:
+    #    print('')
+    #    t=threading.Thread(target=get_page(cookie))
+    #    t.start()
 
 #模式3：对单个用户进行定时get操作
 def time_one_get():
@@ -83,6 +89,7 @@ def time_one_get():
     run=True
     waited=0
     while run:
+        time.sleep(1)
         waited += 1
         if delaytime-waited == 0:
             print('')
@@ -97,7 +104,6 @@ def time_one_get():
         if (delaytime-waited > 15) and (waited % 60 == 0):
             waited = 0
             delaytime=get_webservertime()
-        time.sleep(1)
         print(datetime.datetime.now().strftime('%H:%M:%S')+': 还剩'+str(delaytime-waited)+'秒')
 
 #模式4：对所有用户进行定时get操作
@@ -109,6 +115,7 @@ def time_all_get():
     run=True
     waited=0
     while run:
+        time.sleep(1)
         waited += 1
         if delaytime-waited == 0:
             start=time.clock()
@@ -120,7 +127,6 @@ def time_all_get():
         if (delaytime-waited > 15) and (waited % 60 == 0):
             waited = 0
             delaytime=get_webservertime()
-        time.sleep(1)
         print(datetime.datetime.now().strftime('%H:%M:%S')+': 还剩'+str(delaytime-waited)+'秒')
 
 #模式5：对单个用户进行循环get操作
@@ -156,6 +162,7 @@ def loop_time_one_get():
     run=True
     waited = 0
     while run:
+        time.sleep(1)
         waited += 1
         if delaytime-waited == 0:
             start=time.clock()
@@ -171,7 +178,6 @@ def loop_time_one_get():
         if (delaytime-waited > 15) and (waited % 60 == 0):
             waited = 0
             delaytime=get_webservertime()
-        time.sleep(1)
         print(datetime.datetime.now().strftime('%H:%M:%S')+': 还剩'+str(delaytime-waited)+'秒')
  
 #模式8：对所有用户进行定时循环get操作
@@ -184,6 +190,7 @@ def loop_time_all_get():
     run=True
     waited = 0
     while run:
+        time.sleep(1)
         waited += 1
         if delaytime-waited == 0:
             start=time.clock()
@@ -196,7 +203,6 @@ def loop_time_all_get():
         if (delaytime-waited > 15) and (waited % 60 == 0):
             waited = 0
             delaytime=get_webservertime()
-        time.sleep(1)
         print(datetime.datetime.now().strftime('%H:%M:%S')+': 还剩'+str(delaytime-waited)+'秒')
 
 operator={1:one_get,2:all_get,3:time_one_get,4:time_all_get,5:loop_one_get,6:loop_all_get,7:loop_time_one_get,8:loop_time_all_get}
