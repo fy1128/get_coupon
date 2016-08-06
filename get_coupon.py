@@ -50,7 +50,7 @@ def get_page(cookie):
     }
     url=urls[x-1]
     for i in range(0,3,1):
-        r=s.get(url,headers=headers)
+        r=s.get(url,headers=headers,timeout=60)
     #    print(r.text)
         cer=re.compile('<h1 class="ctxt02"><s class="icon-redbag"></s>(.*)</h1>',flags=0)
         strlist=cer.findall(r.text)
