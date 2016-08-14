@@ -1,4 +1,6 @@
 # Ignore everything in this directory 
-* 
+authcode.jpg
+output.txt
+tesseract.pyc
 # Except this file
 !.gitignore 
