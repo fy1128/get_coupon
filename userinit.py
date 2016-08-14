@@ -165,7 +165,6 @@ if __name__=="__main__":
         if len(users) < 1:
             print ('Users is empty!!')
             sys.exit()
-        print (users)
         for u in users:
             u = u.split(' ')
             username = u[0]
