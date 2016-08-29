@@ -83,6 +83,7 @@ def all_get():
 def time_one_get():
     global target_time
     n=int(input('请选择第n个用户进行操作：'))
+    cookie=cookies[n-1]
     target_time=str(raw_input('\n请输入开始时间（如00:00:00）：'))
     delaytime = get_webservertime()
     print('\n请等待'+str(delaytime)+'秒\n')
@@ -92,9 +93,9 @@ def time_one_get():
         time.sleep(1)
         waited += 1
         if delaytime-waited == 0:
+            print(datetime.datetime.now().strftime('%H:%M:%S')+': 还剩'+str(delaytime-waited)+'秒')
             print('')
             start=time.clock()
-            cookie=cookies[n-1]
             t=threading.Thread(target=get_page(cookie))
             t.start()
             end=time.clock()
@@ -118,6 +119,7 @@ def time_all_get():
         time.sleep(1)
         waited += 1
         if delaytime-waited == 0:
+            print(datetime.datetime.now().strftime('%H:%M:%S')+': 还剩'+str(delaytime-waited)+'秒')
             start=time.clock()
             all_get()
             end=time.clock()
@@ -155,6 +157,7 @@ def loop_all_get():
 def loop_time_one_get():
     global target_time
     n=int(input('请选择第n个用户进行操作：'))
+    cookie=cookies[n-1]
     target_time=str(raw_input('\n请输入开始时间（如00:00:00）：'))
     loop_times=int(input('请输入循环次数：'))
     delaytime = get_webservertime()
@@ -165,10 +168,10 @@ def loop_time_one_get():
         time.sleep(1)
         waited += 1
         if delaytime-waited == 0:
+            print(datetime.datetime.now().strftime('%H:%M:%S')+': 还剩'+str(delaytime-waited)+'秒')
             start=time.clock()
             for i in range(loop_times):
                 print('')
-                cookie=cookies[n-1]
                 t=threading.Thread(target=get_page(cookie))
                 t.start()
             end=time.clock()
@@ -193,6 +196,7 @@ def loop_time_all_get():
         time.sleep(1)
         waited += 1
         if delaytime-waited == 0:
+            print(datetime.datetime.now().strftime('%H:%M:%S')+': 还剩'+str(delaytime-waited)+'秒')
             start=time.clock()
             for i in range(loop_times):
                 all_get()
