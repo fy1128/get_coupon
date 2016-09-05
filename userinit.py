@@ -175,7 +175,7 @@ class JDlogin(object):
                 self.headers['Host'] = 'passport.jd.com'
                 self.headers['Origin'] = 'https://passport.jd.com'
                 self.headers['X-Requested-With'] = 'XMLHttpRequest'
-                login_page = self.session.post(self.post_url, data = postdata, headers = self.headers)
+                login_page = self.session.post(self.post_url, data = postdata, headers = self.headers, params=payload))
 
                 # 若返回{“success”:”http://www.jd.com”}，说明登录成功，登录失败继续重试到成功为止
                 if login_page.text != '({"success":"//www.jd.com"})':
