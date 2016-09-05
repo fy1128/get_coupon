@@ -8,11 +8,12 @@ Info
 - email : "huangfs@bupt.edu.cn"
 - date : "2016.4.13"
 '''
-import os,sys,shutil,time
+import os,sys,shutil,time,random
 import requests
 from bs4 import BeautifulSoup
 import cookielib, urllib, urllib2
 from tesseract import image_to_string
+from selenium import webdriver
 
 default_encoding = 'utf-8'
 if sys.getdefaultencoding() != default_encoding:
@@ -46,11 +47,15 @@ class JDlogin(object):
                         }
         self.session = requests.session()
         self.login_url = "http://passport.jd.com/uc/login"
-        self.post_url = "http://passport.jd.com/uc/loginService"
+        self.post_url = "https://passport.jd.com/uc/loginService"
         self.auth_url = "https://passport.jd.com/uc/showAuthCode"
         self.home_url = "http://home.jd.com/"
         self.un = un
         self.pw = pw
+        try:
+            self.browser = webdriver.PhantomJS('phantomjs')
+        except Exception, e:
+            pass
 
     def cookie_update(self):
         print "\nAuto handle cookie in file, Mozilla Format ...";
@@ -92,21 +97,31 @@ class JDlogin(object):
     def get_info(self):
         '''获取登录相关参数'''
         try:
-            page = self.session.get(self.login_url, headers = self.headers )
-            soup = BeautifulSoup(page.text, "lxml")
+            #page = self.session.get(self.login_url, headers = self.headers )
+            #soup = BeautifulSoup(page.text, "lxml")
+            self.browser.get(self.login_url)
+            time.sleep(3)
+            soup = BeautifulSoup(self.browser.page_source, "lxml")
+            
+            # set cookies from PhantomJS
+            for cookie in self.browser.get_cookies():
+                self.session.cookies[cookie['name']] = str(cookie['value'])      
+                
             input_list = soup.select('.form input')
 
             data = {}
             data['uuid'] = input_list[0]['value']
-            data['machineNet'] = ''
-            data['machineCpu'] = ''
-            data['machineDisk'] = ''
-            data['eid'] = input_list[4]['value']
-            data['fp'] = input_list[5]['value']
-            data['_t'] = input_list[6]['value']
-            data['loginType'] = input_list[7]['value']
-            rstr = input_list[8]['name']
-            data[rstr] = input_list[8]['value']
+            #data['machineNet'] = ''
+            #data['machineCpu'] = ''
+            #data['machineDisk'] = ''
+            data['eid'] = input_list[1]['value']
+            data['fp'] = input_list[2]['value']
+            data['_t'] = input_list[3]['value']
+            data['loginType'] = input_list[4]['value']
+            data['pubKey'] = input_list[5]['value']
+            #rstr = input_list[6]['name']
+            #data[rstr] = input_list[6]['value']
+            data['chkRememberMe'] = 'on'
             acRequired = self.session.post(self.auth_url, data={'loginName':self.un}).text #返回({"verifycode":true})或({"verifycode":false})
 
             if 'true' in acRequired:
@@ -132,8 +147,29 @@ class JDlogin(object):
         while login_test is None:
             postdata = self.get_info()
             postdata['loginname'] = self.un
-            postdata['nloginpwd'] = self.pw
-            postdata['loginpwd'] = self.pw
+            #postdata['nloginpwd'] = self.pw
+            #postdata['loginpwd'] = self.pw
+
+            try:
+                self.browser.get('https://fy1128.github.io/jsencrypt-WFD/receiver.html?pwd=' + urllib.quote(self.pw) + '&pubKey=' + postdata['pubKey'])
+                time.sleep(3)
+                soup = BeautifulSoup(self.browser.page_source, "html.parser")
+                postdata['nloginpwd'] = str(soup.select_one('#pwd').text)
+            except Exception as e:
+                print('Encrypt password failed: ' + str(e))
+                login_test = 1
+            finally:
+                self.browser.service.process.send_signal(signal.SIGTERM)
+                self.browser.quit()
+
+            del(postdata['pubKey'])
+
+            # url parameter
+            payload = {
+                'r': random.random(),
+                'uuid' : postdata['uuid'],
+                'version' : 2015
+            }
 
             try:
                 self.headers['Host'] = 'passport.jd.com'
