@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import requests
+import urllib
 import time,datetime,threading,httplib
 import re
 from multiprocessing.dummy import Pool as ThreadPool
@@ -65,6 +66,13 @@ def get_page(cookie):
     'Upgrade-Insecure-Requests':'1',
     'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     }
+
+    user = re.compile(r';pin=(.+?);', flags=0).findall(cookie)
+    if not user:
+        user = u'用户不存在'
+    else:
+        user = urllib.unquote(user[0]).decode('utf-8')
+
     for i in range(0,3,1):
         try:
             r=s.get(url,headers=headers,timeout=60)
@@ -72,11 +80,11 @@ def get_page(cookie):
             cer=re.compile('<h1 class="ctxt02"><s class="icon-redbag"></s>(.*)</h1>',flags=0)
             strlist=cer.findall(r.text)
             if not strlist:
-                print(datetime.datetime.now().strftime('%H:%M:%S') +': ' + '未知错误')
+                print(datetime.datetime.now().strftime('%H:%M:%S') + ' / ' + user + ': ' + '未知错误')
             else:
-                print(datetime.datetime.now().strftime('%H:%M:%S') +': ' + strlist[0])
+                print(datetime.datetime.now().strftime('%H:%M:%S') + ' / ' + user + ': ' + strlist[0])
         except Exception as e:
-            print(datetime.datetime.now().strftime('%H:%M:%S') + ': ' + str(e))
+            print(datetime.datetime.now().strftime('%H:%M:%S') + ' / ' + user + ': ' + str(e))
             continue
 
         time.sleep(1)        
