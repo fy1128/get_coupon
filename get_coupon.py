@@ -178,21 +178,21 @@ def post_page(user):
     s.headers=headers
     data='itemId='+itid+'&password='+user[1]+'&token='+token
 
-    user = get_unameincookie(user[0])
+    uname = get_unameincookie(user[0])
 
     try:
         r=s.post('http://vip.jd.com/bean/exchangeCoupon.html',data=data,timeout=1)
         if '提交错误' in r.text:
             token=get_token()
-            return post_page(cookie,password)
+            return post_page(user)
         if 'true' in r.text:
-            print(datetime.datetime.now().strftime('%H:%M:%S') + ' / ' + user + ': ' + r.text)
+            print(datetime.datetime.now().strftime('%H:%M:%S') + ' / ' + uname + ': ' + r.text)
             with open('result.txt','a') as fw:
                 fw.write(r.text)
     except:
-        return post_page(cookie,password)
+        return post_page(user)
     else:
-        print(datetime.datetime.now().strftime('%H:%M:%S') + ' / ' + user+ ': ' + r.text)		
+        print(datetime.datetime.now().strftime('%H:%M:%S') + ' / ' + uname + ': ' + r.text)		
 
 #模式1：对单个用户进行get操作
 def one_get():
